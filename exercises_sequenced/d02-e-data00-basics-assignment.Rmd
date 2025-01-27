@@ -19,7 +19,7 @@ super useful for writing code that's readable.
 
 ```{r setup}
 library(tidyverse)
-```
+```  
 
 ```{r options, include=FALSE}
 # knitr options
