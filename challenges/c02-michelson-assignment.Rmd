@@ -1,6 +1,6 @@
 ---
 title: "Michelson Speed-of-light Measurements"
-author: "(Your name here)"
+author: "Elisa Camacho"
 date: 2020-
 output: 
   github_document:
@@ -85,17 +85,26 @@ df_michelson %>% glimpse()
 
 ```{r q1-task}
 ## TODO: Compute summaries
-df_q1 <- NA
+## Distinctness of measured images: 3 = good, 2 = fair, 1 = poor
+df_q1 <- df_michelson %>%
+  group_by(Distinctness) %>%
+  summarise(
+    n = n(),
+    MeanVelocity = mean(Velocity, na.rm = TRUE) 
+  ) %>%
+  arrange(desc(Distinctness))
+
 df_q1 %>%
-  arrange(desc(Distinctness)) %>%
   knitr::kable()
+
 ```
 
 **Observations**:
 - Write your observations here!
-  - (Your response here)
+The mean velocity are the same for distinctness levels 3 and 2 but lower for distinctness level 1.
+The number of measurements (n) decreases as the distinctness quality decreases
 - Why might your table differ from Michelson's?
-  - (Your response here)
+Michelson may have used a different method to calculate the mean velocity, which then gave him differnet results
 
 The `Velocity` values in the dataset are the speed of light *in air*; Michelson
 introduced a couple of adjustments to estimate the speed of light in a vacuum.
@@ -108,7 +117,8 @@ observations in the dataset.
 
 ```{r q2-task}
 ## TODO: Adjust the data, assign to df_q2
-df_q2 <- NA
+df_q2 <- df_michelson %>% 
+  mutate(VelocityVacuum = Velocity + 92)
 
 df_q2
 ```
@@ -137,6 +147,18 @@ problems uncertainty includes some amount of human judgment.[2]
 ```{r q3-task}
 ## TODO: Compare Michelson's estimate and error against the true value
 ## Your code here!
+LIGHTSPEED_VACUUM <- 299792.458  
+LIGHTSPEED_MICHELSON <- 299944.00  
+LIGHTSPEED_PM <- 51  
+
+true_error <- abs(LIGHTSPEED_VACUUM - LIGHTSPEED_MICHELSON)
+uncertainty_range <- c(LIGHTSPEED_MICHELSON - LIGHTSPEED_PM, LIGHTSPEED_MICHELSON + LIGHTSPEED_PM)
+is_within_range <- LIGHTSPEED_VACUUM >= uncertainty_range[1] & LIGHTSPEED_VACUUM <= uncertainty_range[2]
+
+# Print results
+print(paste("True Error (km/s):", true_error))
+print(paste("Michelson's Uncertainty Range (km/s):", paste(uncertainty_range, collapse = " to ")))
+print(paste("Is True Value Within Uncertainty Range?:", is_within_range))
 ```
 
 **Observations**:
