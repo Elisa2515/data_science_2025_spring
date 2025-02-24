@@ -1,6 +1,6 @@
 ---
-title: "Aluminum Data"
-author: "(Your name here)"
+title: "CHALLENGE 3 Aluminum Data"
+author: " Elisa Camacho"
 date: 2020-
 output:
   github_document:
@@ -66,8 +66,23 @@ Note that these data are not tidy! The data in this form are convenient for repo
 
 ```{r q1-task}
 ## TASK: Tidy `df_stang`
+
+## TASK: Tidy df_stang
 df_stang_long <-
-  df_stang
+  df_stang %>%
+    pivot_longer(
+      names_to = c("var","angle"),
+      names_sep = "_",
+      values_to = "val",
+      cols = starts_with("E") | starts_with("mu") | starts_with("nu"),
+  )%>%
+  filter(val != -1) %>%
+    pivot_wider(
+      names_from = var,
+      values_from = val,
+    ) %>%
+  mutate(angle = as.integer(angle))%>%
+  unnest(cols = c(E,nu))
 
 df_stang_long
 ```
