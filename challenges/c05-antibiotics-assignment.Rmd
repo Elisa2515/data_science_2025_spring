@@ -1,6 +1,6 @@
 ---
 title: "Antibiotics"
-author: "(Your name here)"
+author: "Elisa Camacho"
 date: 2020-
 output:
   github_document
@@ -76,6 +76,21 @@ In this visual you must show *all three* effectiveness values for *all 16 bacter
 
 ```{r q1.1}
 # WRITE YOUR CODE HERE
+# Pivot the data to long format for easier plotting
+df_long <- df_antibiotics %>%
+  pivot_longer(cols = c(penicillin, streptomycin, neomycin), 
+               names_to = "antibiotic", 
+               values_to = "MIC")
+
+# Visual 1: Bar plot showing MIC values for each antibiotic by bacteria
+ggplot(df_long, aes(x = bacteria, y = MIC, fill = antibiotic)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~gram, scales = "free_x") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "MIC Values for Antibiotics by Bacteria and Gram Stain",
+       x = "Bacteria",
+       y = "Minimum Inhibitory Concentration (MIC)",
+       fill = "Antibiotic")
 ```
 
 #### Visual 2 (All variables)
@@ -86,6 +101,15 @@ Note that your visual must be *qualitatively different* from *all* of your other
 
 ```{r q1.2}
 # WRITE YOUR CODE HERE
+# Visual 2: Scatter plot showing MIC values for each antibiotic by bacteria
+ggplot(df_long, aes(x = antibiotic, y = MIC, color = bacteria, shape = gram)) +
+  geom_point(size = 3) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "MIC Values for Antibiotics by Bacteria and Gram Stain",
+       x = "Antibiotic",
+       y = "Minimum Inhibitory Concentration (MIC)",
+       color = "Bacteria",
+       shape = "Gram Stain")
 ```
 
 #### Visual 3 (Some variables)
@@ -96,6 +120,13 @@ Note that your visual must be *qualitatively different* from *all* of your other
 
 ```{r q1.3}
 # WRITE YOUR CODE HERE
+# Visual 3: Box plot showing MIC values for each antibiotic by Gram stain
+ggplot(df_long, aes(x = antibiotic, y = MIC, fill = gram)) +
+  geom_boxplot() +
+  labs(title = "Distribution of MIC Values by Antibiotic and Gram Stain",
+       x = "Antibiotic",
+       y = "Minimum Inhibitory Concentration (MIC)",
+       fill = "Gram Stain")
 ```
 
 #### Visual 4 (Some variables)
