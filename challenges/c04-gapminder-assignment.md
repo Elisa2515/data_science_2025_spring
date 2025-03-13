@@ -198,7 +198,6 @@ can.
 ## TASK: Create a visual of gdpPercap vs continent
 gapminder_1952 <- gapminder %>% filter(year == year_min)
 
-# Create a boxplot of gdpPercap vs continent for 1952
 gapminder_1952 %>%
   ggplot(aes(x = continent, y = gdpPercap)) +
   geom_boxplot() +
@@ -325,7 +324,7 @@ outliers_1952 <- gapminder %>%
   ) %>%
   filter(gdpPercap > Upper_Whisker)  # Filter for outliers
 
-# Create a plot comparing gdpPercap vs continent for both years
+# plot comparing gdpPercap vs continent for both years
 gapminder_years %>%
   ggplot(aes(x = continent, y = gdpPercap)) +
   geom_boxplot() +
@@ -334,7 +333,7 @@ gapminder_years %>%
     aes(color = country),
     size = 3
   ) +
-  facet_wrap(~year, ncol = 1) +  # Facet by year
+  facet_wrap(~year, ncol = 1) +  
   labs(
     title = "GDP per Capita by Continent (1952 vs 2007)",
     subtitle = "Outliers from 1952 highlighted",
@@ -349,11 +348,10 @@ gapminder_years %>%
 **Observations**: The comparison between 1952 and 2007 shows significant
 economic growth across all continents.
 
-The outliers in 1952 (e.g., Kuwait) highlight countries that were
-already economically advanced at the time.
+The outliers in 1952 (Kuwait) highlight countries that were already
+economically advanced at the time.
 
-The rise of new outliers in 2007 reflects the emergence of new economic
-powerhouses.
+The rise of new outliers in 2007 reflects the new economic growth.
 
 # Your Own EDA
 
@@ -385,10 +383,9 @@ gapminder %>%
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task1-1.png)<!-- -->
 
-- (Your notes and observations here) Trends:
+- (Your notes and observations here)
 
-Life expectancy has increased steadily across all continents from 1952
-to 2007.
+Life expectancy has increased across all continents from 1952 to 2007.
 
 Europe and Oceania have the highest life expectancy, while Africa has
 the lowest.
@@ -419,29 +416,24 @@ gapminder %>%
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task2-1.png)<!-- -->
 
-- (Your notes and observations here) Relationship:
+- (Your notes and observations here)
 
-There is a positive correlation between GDP per capita and life
-expectancy.
+The relationship shown here is that There is a positive correlation
+between GDP per capita and life expectancy.
 
 Countries with higher GDP per capita tend to have higher life
 expectancy.
 
-Outliers:
+Some countries (Africa) have low GDP per capita but relatively high life
+expectancy.
 
-Some countries (e.g., in Africa) have low GDP per capita but relatively
-high life expectancy.
-
-Some countries (e.g., in Asia) have high GDP per capita but
-lower-than-expected life expectancy.
+Some countries (Asia) have high GDP per capita but lower-than-expected
+life expectancy.
 
 Questions:
 
 What explains the outliers with low GDP per capita but high life
 expectancy?
-
-Are there diminishing returns to life expectancy as GDP per capita
-increases?
 
 ``` r
 ## TASK: Your third graph
@@ -465,9 +457,8 @@ gapminder %>%
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task3-1.png)<!-- -->
 
-- (Your notes and observations here) Trends:
-
-Asia has the highest population and the fastest growth rate.
+- (Your notes and observations here) A trend I see is that Asia has the
+  highest population and the fastest growth rate.
 
 Africa shows rapid population growth starting in the 1980s.
 
