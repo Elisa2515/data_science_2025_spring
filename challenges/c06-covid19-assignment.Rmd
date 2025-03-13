@@ -371,13 +371,12 @@ df_summary
 ```
 
 -   Which rows did you pick?
-Summarized US Cases:
 
 I looked at all COVID-19 cases in the US, but only for counties that have population data. Counties without population data (like NYC and some unknown areas) were excluded because we can't calculate rates without knowing the population.
 
 Focused on the Most Recent Data:
 
-I filtered the data to only include the latest date for each county. This avoids misleading results from early or incomplete data.
+I filtered the data to only include the latest date for each county. I did this to avoid misleading results. 
 
 ### **q7** Find and compare the top 10
 
@@ -424,7 +423,7 @@ df_top10 %>%
 df_normalized %>%
   ggplot(aes(x = cases_per100k, y = deaths_per100k)) + 
   # geom_smooth() + #this line seemed misleading
-  geom_point(size = 0.5, color = "gray", alpha = 0.1) +
+  geom_point(size = 0.5, color = "black", alpha = 0.1) +
   geom_point(data = df_top10, 
              aes(x = cases_per100k, 
                  y = deaths_per100k, 
@@ -437,11 +436,11 @@ df_normalized %>%
 
 -  Most top counties for cases are in Alaska or Texas, with Loving, TX being a notable outlier due to its tiny population.
 
-There’s no clear link between case counts and death counts in this small sample, but the full dataset shows that more cases generally lead to more deaths.
+There’s no clear connection between case counts and death counts in this small sample, but the full dataset shows that more cases generally lead to more deaths.
 
-Normalized data might not be the best way to analyze this, and I’ll look into better methods.
+Normalized data might not be the best way to analyze this.
 
-The top counties for cases and deaths are all small to medium-sized, with populations under 80,000
+The top counties for cases and deaths are populations under 80,000.
 
 ## Self-directed EDA
 
@@ -463,29 +462,37 @@ The top counties for cases and deaths are all small to medium-sized, with popula
 **Topic: How does covid spread compare in low-population counties?**
 
 ```{r q8-lowpop-exploration}
-
 # Histogram of county populations (log scale)
 # Scatterplot: Cases vs Deaths per 100k (Low-Population Counties)
-cases_vs_deaths_plot <- df_lowpop %>%
-  ggplot(aes(x = cases, y = deaths_per100k)) +
-  geom_point(size = 1.5, alpha = 0.5, color = "darkblue") +
-  geom_smooth(method = "lm", color = "red", se = FALSE) +
+#cases_vs_deaths_plot <- df_lowpop %>%
+# Filter for counties in the bottom 25% of population (excluding NA values)
+df_lowpop <- df_normalized %>%
+  filter(!is.na(population)) %>%
+  filter(population < quantile(population, 0.25, na.rm = TRUE))
+
+# View summary
+summary(df_lowpop$population)
+
+# Scatterplot: Cases vs Deaths per 100k (Low-Population Counties)
+ggplot(df_lowpop, aes(x = cases_per100k, y = deaths_per100k, size = population, color = state)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  # Linear trendline
   labs(
-    title = "Cases vs Deaths per 100k in Low-Population Counties",
-    x = "Total Cases",
+    title = "COVID-19 Spread in Low-Population Counties",
+    x = "Cases per 100,000",
     y = "Deaths per 100,000"
   ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-    axis.title = element_text(size = 12)
-  )
+  theme_minimal()
 
-# Display the scatterplot
-cases_vs_deaths_plot
+#cases_vs_deaths_plot
 ```
 
 **Observations**
+From the graph above Low-population counties tend to have high variance in cases/deaths per 100k. I assume this is likey because small number exaggerate per capita rates. 
+
+Some outliers have extremely high case rates (small rural counties with outbreaks).
+
+Deaths per 100k appear more stable across population levels, suggesting external factors (e.g., healthcare access)
 
 
 ```{r q8-total-count}
@@ -584,3 +591,11 @@ The NYT repo documents some [geographic exceptions](https://github.com/nytimes/c
 [2] FIPS stands for [Federal Information Processing Standards](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards); these are computer standards issued by NIST for things such as government data.
 
 [3] Demographers often report statistics not in percentages (per 100 people), but rather in per 100,000 persons. This is [not always the case](https://stats.stackexchange.com/questions/12810/why-do-demographers-give-rates-per-100-000-people) though!
+
+```{r}
+# Sum the deaths column
+#total_deaths <- sum(df_covid$deaths, na.rm = TRUE)
+
+# Display the result
+#print(paste("Total deaths reported in the dataset:", total_deaths))
+```
