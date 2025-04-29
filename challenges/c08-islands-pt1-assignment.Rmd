@@ -28,7 +28,7 @@ Unlike exercises, **challenges will be graded**. The following rubrics define ho
 <!-- ------------------------- -->
 
 | Category | Needs Improvement | Satisfactory |
-|------------------|-----------------------------|-------------------------|
+|------------------------|------------------------|------------------------|
 | Effort | Some task **q**'s left unattempted | All task **q**'s attempted |
 | Observed | Did not document observations, or observations incorrect | Documented correct observations based on analysis |
 | Supported | Some observations not clearly supported by analysis | All observations clearly supported by analysis (table, graph, etc.) |
@@ -70,19 +70,19 @@ NB. When Zach counted the homes (on 2025-01-08), he found 20 unoccupied out of 5
 **Observations**:
 
 -   What is the total number of homes in Helvig?
-    -   I cannot complete this section at the moment becuase the Islands website is down
+    -   547
 -   What is the number of unoccupied homes? (*Hint*: This is not given anywhere. You will have to count them!)
-    -   (Your response here)
+    -   17
 -   What percent of homes are *occupied*?
-    -   (Your response here)
+    -   about 97%
 -   Are there any sources of *real* uncertainty in the percent occupied you calculated?
-    -   (Your response here)
+    -   This website doesn't keep track of it's residents the we do in the real world for example we use US census, while the Islands website can only capture the residents in a moment in time so its not completely accurate.
 -   Are there any sources of *erroneous* uncertainty in the percent occupied you calculated?
-    -   (Your response here)
+    -   Misclaculation perhaps, accidentally marking an occupied home as unoccupied
 
 Zach looked at the first 25 homes in Helvig and recorded the `age` and `name` of every person in those homes. These people are provided in `helvig-seq.csv`.
 
-```{r}
+```{r hi2}
 ## NOTE: Do not edit this
 df_sample_seq <- read_csv("./data/helvig-seq.csv")
 df_sample_seq 
@@ -103,21 +103,17 @@ Make sure to include in `df_q3` the counts as a column named `n`, and the preval
 ## TASK: Compute the prevalence and sort
 df_q3 <- 
   df_sample_seq %>% 
-  # Extract last name (assuming names are in "First Last" format)
-  mutate(last_name = str_extract(name, "\\w+$")) %>% 
-  # Count occurrences of each last name
-  count(last_name, name = "n") %>% 
-  # Calculate prevalence (n divided by total people)
-  mutate(p = n / sum(n)) %>% 
-  # Sort by prevalence in descending order
-  arrange(desc(p))
+  mutate(last_name = word(name, -1)) %>%  
+  count(last_name, name = "n") %>%  
+  mutate(p = n / sum(n)) %>%  
+  arrange(desc(p))  
 
 df_q3
 ```
 
 Use the following to check your work.
 
-```{r q3-tests}
+```{r q3-tests-2}
 ## NOTE: No need to change this
 ## Check that data has `p` column and is in descending order
 assertthat::assert_that(
@@ -135,7 +131,7 @@ print("Very good!")
 -   What last name is most prevalent in `df_sample_seq`?
     -   Sorensen
 -   Is this sample representative of *all* houses in Helvig? Why or why not?
-    -   Likely no, because of Sequential Sampling Bias: If `df_sample_seq` was collected sequentially (first 25 houses on a street), it is likely to over represent families and neightborhoods meaning it is not an accuarate representation of all the houses in Helvig.
+    -   Likely no, because of Sequential Sampling Bias: If `df_sample_seq` was collected sequentially, it is most likely to over represent families and neightborhoods meaning it is not an accuarate representation of all the houses in Helvig.
 
 In the exercises, we talked about the importance of random sampling. In the previous challenge, we were able to *simulate* a random sample by running a few lines of code. But in the real world, we have to work harder to gather a random sample. We'll do this in two stages: *plan* then *collect*.
 
@@ -143,35 +139,35 @@ In the exercises, we talked about the importance of random sampling. In the prev
 
 Complete the code below to draw a sample of size `n=25`. Replace `n_houses` with the (current) total number in Helvig.
 
-```{r}
+```{r hi}
 ## Select a random sample of houses
-n_houses <- 100  # Replace 1000 with the actual total number of houses in Helvig
-n_sample <- 25    # Desired sample size
+## Select a random sample of houses
+n_houses <- 547 # Total number of houses
+n_sample <- 25 # Desired sample size
 
-set.seed(101)     # Set a seed for reproducibility
+set.seed(101)   # Set a seed for reproducibility
 
 df_numbers_random <- 
   tibble(
     house = sample(
         1:n_houses,     # All integers from 1 to n_houses
-        n_sample,       # Size of our sample (25)
-        replace = FALSE # Sample without replacement
+        n_sample,       # Size of our sample
+        replace = FALSE # Sample *WITHOUT* replacement
       )
   ) %>% 
   # Arrange for our data collection convenience
   arrange(house)
 
-# Display the sampled house numbers
-sampled_houses <- df_numbers_random %>% 
+# Pull the column so we can list just the house numbers
+df_numbers_random %>% 
   pull(house)
-sampled_houses
 
 
 ```
 
 Use the following code to check your results.
 
-```{r}
+```{r something2}
 ## NOTE: No need to change this
 assertthat::assert_that(
   all(dim(df_numbers_random) == c(25, 1))
@@ -182,16 +178,16 @@ assertthat::assert_that(
 
 Gather the names of all people in the homes you listed in the previous exercise. Match the same columns as `df_sample_seq`; those are, `house`, `age`, `name`. Make sure to include `NA` rows for houses with no occupants. Save your data as a CSV with the filename provided in the variable `filename_random`. Answer the questions below.
 
-```{r}
+```{r something}
 ## NOTE: Do not edit
-filename_random
+filename_random 
 ```
 
 Note that this points to the `data/` subdirectory in your `challenges` folder.
 
 The following code will load your data.
 
-```{r}
+```{r 23}
 ## NOTE: Do not edit
 df_sample_random <- 
   read_csv(filename_random)
@@ -217,9 +213,8 @@ numVsamp <-
   pull(house)
 assertthat::assert_that(
   length(numVsamp) == 0,
-  msg = str_c("You are missing the houses: ", numVsamp)
+  msg = str_c("You are missing the houses: ", str_c(numVsamp, collapse = ", "))
 )
-
 sampVnum <- 
   anti_join(
     df_sample_random %>% distinct(house),
@@ -231,21 +226,20 @@ assertthat::assert_that(
   length(sampVnum) == 0,
   msg = str_c("You have extra houses: ", sampVnum)
 )
-
 print("Great work!")
 ```
 
 *Observations*
 
 -   Which sample---sequential or random---is more *representative* of all homes Helvig? Why?
-    -   (Sequential or random?)
-    -   (Write your 'why' here.)
+    -   The random sample is more representative
+    -   By sampling houses from a broader population across the town, we gather data from households that are more geographically dispersed. When houses are close together, residents are more likely to share the same last name due to familial ties. Additionally, households with similar incomes often cluster in the same neighborhoods. However, when houses are farther apart, the individuals in each household are less likely to be related to those in the next, providing a more accurate representation of last name diversity in Helvig.
 
 ### **q6** Find common names: Random sample
 
 Run the code below to find the prevalence of the most common *last name* in Helvig using the sample `df_sample_random`. Answer the questions below.
 
-```{r}
+```{r 5}
 # NOTE: No need to edit; run and answer the questions below
 df_sample_random %>% 
   mutate(last = str_extract(name, "\\w+$")) %>% 
@@ -257,9 +251,9 @@ df_sample_random %>%
 *Observations*
 
 -   Did you find any highly prevalent names using `df_sample_random` that you *didn't* find in q3 (using `df_sample_seq`)? Write them here.
-    -   (Your response here)
+    -   Solberg and Eklund appear more than once in the random sample but do not appear in the sequential sample. Edwards, Sorensen and Thorn are said 4 times. Their are 6 names that appear twice and the rest are said only once.
 -   Is there any reason that people with the same last name might tend to *live near each other*?
-    -   (Your response here)
+    -   When people get married and have children their children often take the name of one of the parents so a name appearing many times indicates a big family. Additionally extended families will often want to stay close to their relatives so that's why last names tend to live near each other.
 
 You should have found some difference between the sequential and random samples. This is because we're only working with a *sample*---a limited number of observations from the entire population. We could go to every single house in Helvig and determine *exactly* how many people of each name there are (that's called a *census*), but the point of statistical inference is that we can make statements about a population using only a sample. What makes statistical inference powerful is that we can determine *how confident* we should be in our results, based on the size of our sample.
 
@@ -269,21 +263,23 @@ To do this, we'll use the bootstrap approach that you saw in the exercise sequen
 
 Complete the code below to write a helper function. Your function will compute the proportion of people in a sample that have a user-specified last name.
 
-```{r}
+```{r 1}
 ## TASK: Write a helper function that takes a dataframe with full names 
 #  (provided in a `name` column), removes any invalid rows, and computes the
-#  proportion of individuals with the user-specified `last` name (returned
-#  in an `estimate` column).
 name_prevalence <- function(df, last = "Collins") {
   df %>% 
-    ## TODO: Finish this code
-    mutate(term = "prevalence")
+    filter(!is.na(name)) %>%  # Remove invalid rows with missing names
+    mutate(last_name = stringr::word(name, -1)) %>%  # Extract last name
+    summarise(
+      term = "prevalence",
+      estimate = mean(last_name == last)  # Proportion with the specified last name
+    )
 }
 ```
 
 Use the following code to check your results.
 
-```{r}
+```{r 2}
 ## NOTE: No need to change this
 # Find the most prevalent name in the data
 last_most <- 
@@ -328,7 +324,7 @@ Choose a prevalent name that you found in q6. Use bootstrap resampling with your
 
 *Hint*: We learned how to do resampling-based inference in `e-stat09`.
 
-```{r}
+```{r q8-task}
 # TASK: Complete the code below to compute a bootstrap-based confidence interval
 df_interval_bootstrap <- 
   df_sample_random %>% 
@@ -339,6 +335,7 @@ df_interval_bootstrap <-
       function(split_df) {
 ## TODO: Finish this code, using the name_prevalence() helper you implemented
 ## HINT: Remember that you need to use analysis() when operating on split_df
+         name_prevalence(analysis(split_df), last = "Camacho")  
       }
     )
   ) %>% 
@@ -352,20 +349,20 @@ df_interval_bootstrap
 **Observations**:
 
 -   What is highest possible prevalence for your chosen name, based on the confidence interval you constructed?
-    -   (Your response here)
+    -   0%
 -   Note that we used the *random* sample with the bootstrap procedure in this task. Could we use the bootstrap to make a confidence interval using the sequential sample (`df_sample_seq`) that would be representative of all of Helvig? Why or why not?
-    -   (Yes or no.)
-    -   (Write your 'why' here.)
+    -   No
+    -   I say it is not an accurate representation of Helvig because the data would be skewed because families tend to live near each other so they will tend to have the same last name.
 
 ### **q9** Discover possible measurements
 
-Click on a single islander (you can do this from one of the houses), and take a look at what info they can provide. Write down three pieces of info that you're particularly interested in; this will inform your quantity of interest for the final task.
+Click on a single islander (xyou can do this from one of the houses), and take a look at what info they can provide. Write down three pieces of info that you're particularly interested in; this will inform your quantity of interest for the final task.
 
 *Hint*: The videos from the [Visitor Center](https://islands.smp.uq.edu.au/visitors.php) will be especially helpful for getting some ideas.
 
--   (Possible measurement #1)
--   (Possible measurement #2)
--   (Possible measurement #3)
+-   Rule Test to identify reaction times
+-   How alcohol consumption affects a physiological/coordiation test
+-   Does weigh/height have an effect on how alcohol consumption affects a physiological/coordiation test
 
 ### **q10 Planning a study (TEAMWORK)**
 
@@ -381,40 +378,52 @@ Challenge 10 will be a team assignment where you plan and execute a statistical 
 
 -   Reaction Time
 
-**Covariates**
+#### **Covariates**
 
--   (Write any relevant covariates here)
--   (There's probably more than one!)
+-   Weight, height, age, amount of alcohol consumed, reaction time before consumption to compare
 
-**Observation or experiment?**
+#### **Observation or experiment?**
 
-The Islands allows you to ask islanders to complete tasks. If you just take measurements on your participants, then it's an *observational study*. But if you also introduce something that's meant to change the outcome of a measurement (e.g., drinking coffee before taking a test), that's called an *experimental study*. You need to decide whether your study is observational or experimental.
+The Islands allows you to ask islanders to complete tasks. If you just take measurements on your participants, then it’s an *observational study*. But if you also introduce something that’s meant to change the outcome of a measurement (e.g., drinking coffee before taking a test), that’s called an *experimental study*. You need to decide whether your study is observational or experimental.
 
--   Experimental because we are going to record their reaction time before and then provide them with substances and record their reaction time afterwards.
+-   Experimental because we are recording reaction times before consumption of a substance and then re-recording after the islanders take a substance.
 
-**Question / Hypothesis**
+#### **Question / Hypothesis**
 
--   We will be testing to see if there a trend between body weight and reaction time when a person is given X amount of alcohol (or cannabis if possible)
-    -   This could be an observational question, like "How are X and Y related in the population?"
-    -   This could be an experimental question, like "What effect does X have on Y in the population?"
+-   How does consumption of alcohol/cannabis effect the islanders reaction times when we take the weight into account.
 
-**Sampling plan**
+#### **Sampling plan**
 
--   (What steps will you take to collect the data?)
-    -   Generate a random sample of house numbers in Akkeshi
-    -   Within each house we are going to only select individuals above the age of 21, for ethical considerations
-        -   We are aware that this would add some bias into the collection but we believe that it is necessary for the experiment.
-    -   Test each individual's reaction time without any substances
-    -   Record the value of the reaction time
-    -   Give the individual the specific amount of substance
-    -   Record the new reaction time
-    -   Record the individual's body weight at the time of testing
-        -   Be specific. For instance, if you're going to collect a random sample, how will you enumerate all of the things to be sampled?
-        -   Write a protocol. Document step-by-step instructions that your team will follow. That way, you can feasibly split up data collection among the whole team, while making sure each team member doesn't make ad hoc decisions that introduce bias into your results.
+-   Find a random collection of 25 houses
+
+-   Identify individuals in those houses that are above the age of 21 to make a more uniform sample group and for ethical considerations.
+
+-   Record the weights of the islanders we are observing
+
+-   Find the reaction times of each individual before the consumption of a substance
+
+-   Give the individual the specific amount of substance
+
+-   Record the new reaction time
+
+-   Record the individual’s body weight at the time of testing
+
+    ## **Give the individuals a certain**
+
+    ```         
+    -   Be specific. For instance, if you're going to collect a random sample, how will you enumerate all of the things to be sampled? -   Write a protocol. Document step-by-step instructions that your team will follow. That way, you can feasibly split up data collection among the whole team, while making sure each team member doesn't make ad hoc decisions that introduce bias into your results. 
+    ```
+
 -   (How will you ensure the data is representative of your chosen population?)
-    -   Random sampling
+
+    -   Random Sampling
+
 -   (For experiments only: How will you ensure any effects you observe are due to the treatment, and not due to other factors?)
-    -   We will collect all of our data in one sitting so that there are no other interacts the individual could have
-    -   Luckily this test does not involve waiting time
--   Our sample size will be 30 people so that each person in our group only has to test 5 people.
-    -   This should be a mix of how confident you want to be in your results, and what is actually *feasible* for your research team.
+
+-   We will take our data in one sitting, luckily the effects should not take a significant amount of time to begin.
+
+-   (How will you choose your sample size?)
+
+    -   This should be a mix of how confident you want to be in your results, and what is actually *feasible* for your research team.
+
+-   We will do 30 people to get a decent sample size and also so each member of our team only has to worry about 5 people each.
