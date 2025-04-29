@@ -1,6 +1,6 @@
 Getting Started: Diamonds
 ================
-(Your name here)
+Elisa Camacho
 2020-
 
 - [Grading Rubric](#grading-rubric)
@@ -98,52 +98,52 @@ document your observations.
 ``` r
 ## TASK: Plot `price` vs `carat` below
 ## Your code here!
-library(tidyverse)
-ggplot(diamonds, aes(x = carat, y = price)) +
-  geom_point(alpha = 0.5) 
+ diamonds %>% 
+  ggplot() +          
+  geom_point(     
+    mapping = aes( 
+      x = carat,  
+      y = price    
+      )
+    )
 ```
 
 ![](c00-diamonds-assignment_files/figure-gfm/q1-task-1.png)<!-- -->
 
-``` r
-  labs(title = "Price vs Carat of Diamonds",
-       x = "Carat",
-       y = "Price") +
-  theme_minimal()
-```
-
-    ## NULL
-
 **Observations**:
 
-- (Write your observations here!) I noticed a steady upwards growth in
-  the graph. their are noticeable clusters of diamond cuts around the
-  carat mark at 1, 1.5, 2 one single 5 carat cut diamond at the edge of
-  the graph.
+- The plot shows a positive correlation between carat weight and price
+
+- Notable clusters appear around common carat weights (1, 1.5, and 2
+  carats)
+
+- A single outlier exists at approximately 5 carats
 
 ### **q2** Create a visualization showing variables `carat`, `price`, and `cut` simultaneously. Experiment with which variable you assign to which aesthetic (`x`, `y`, etc.) to find an effective visual.
 
 ``` r
 ## TASK: Plot `price`, `carat`, and `cut` below
 ## Your code here!
-ggplot(diamonds, aes(x = carat, y = price, color = cut)) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Price vs Carat, Colored by Cut",
-       x = "Carat",
-       y = "Price",
-       color = "Cut") +
-  theme_minimal()
+diamonds %>%  
+  ggplot(aes(x = carat, y = price, color = cut)) +  
+  geom_point(alpha = 0.5) +  
+  labs(  
+    title = "Price vs Carat by Diamond Cut Quality",  
+    x = "Carat (weight)",  
+    y = "Price (USD)",  
+    color = "Cut Quality"  
+  ) +  
+  theme_minimal()  
 ```
 
 ![](c00-diamonds-assignment_files/figure-gfm/q2-task-1.png)<!-- -->
 
-**Observations**:
-
-- (Write your observations here!) Higher- quality cuts that are labeled
-  as ideal have the same prices as the fair quality cuts. Their is a
-  noticeable variation in price trends among different cut types. The
-  highest prices are seen in certain premium and very high-carat
-  diamonds.
+**Observations**: It seems like cut quality diamond of any kind can have
+high prices. High prices are not reserved for premium cut diamonds as I
+assumed before this assignment. Higher-quality cuts (Ideal) sometimes
+have similar prices to lower-quality cuts (Fair). Ideal Diamonds seem to
+not go past 3.5 carat weight I notices many outliers of fair cut
+diamonds that have high carat weight.
 
 # Communication
 

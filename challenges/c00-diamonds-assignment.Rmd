@@ -1,6 +1,6 @@
 ---
 title: "Getting Started: Diamonds"
-author: "(Your name here)"
+author: "Elisa Camacho"
 date: 2020-
 output:
   github_document:
@@ -55,23 +55,46 @@ In this first stage, you will explore the `diamonds` dataset and document your o
 ```{r q1-task}
 ## TASK: Plot `price` vs `carat` below
 ## Your code here!
+ diamonds %>% 
+  ggplot() +          
+  geom_point(     
+    mapping = aes( 
+      x = carat,  
+      y = price    
+      )
+    )
 ```
 
 **Observations**:
 
-- (Write your observations here!)
+- The plot shows a positive correlation between carat weight and price
+
+- Notable clusters appear around common carat weights (1, 1.5, and 2 carats)
+
+- A single outlier exists at approximately 5 carats
 
 ### __q2__ Create a visualization showing variables `carat`, `price`, and `cut` simultaneously. Experiment with which variable you assign to which aesthetic (`x`, `y`, etc.) to find an effective visual.
 
 ```{r q2-task}
 ## TASK: Plot `price`, `carat`, and `cut` below
 ## Your code here!
+diamonds %>%  
+  ggplot(aes(x = carat, y = price, color = cut)) +  
+  geom_point(alpha = 0.5) +  
+  labs(  
+    title = "Price vs Carat by Diamond Cut Quality",  
+    x = "Carat (weight)",  
+    y = "Price (USD)",  
+    color = "Cut Quality"  
+  ) +  
+  theme_minimal()  
 ```
 
 **Observations**:
-
-- (Write your observations here!)
-
+It seems like cut quality diamond of any kind can have high prices. High prices are not reserved for premium cut diamonds as I assumed before this assignment. 
+Higher-quality cuts (Ideal) sometimes have similar prices to lower-quality cuts (Fair).
+Ideal Diamonds seem to not go past 3.5 carat weight
+I notices many outliers of fair cut diamonds that have high carat weight.
 
 # Communication
 <!-- -------------------------------------------------- -->
