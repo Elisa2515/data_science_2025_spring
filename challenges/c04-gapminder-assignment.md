@@ -121,7 +121,19 @@ glimpse(gapminder)
 
 **Observations**:
 
-- Write all variable names here
+Write all variable names here
+
+- country: Nation name
+
+- continent: Continent
+
+- year: Year of observation
+
+- lifeExp: Life expectancy at birth
+
+- pop: Total population
+
+- gdpPercap: GDP per capita (US dollars, inflation-adjusted)
 
 ### **q1** Determine the most and least recent years in the `gapminder` dataset.
 
@@ -196,17 +208,13 @@ can.
 
 ``` r
 ## TASK: Create a visual of gdpPercap vs continent
-gapminder_1952 <- gapminder %>% filter(year == year_min)
-
-gapminder_1952 %>%
+gapminder %>% 
+  filter(year == year_min) %>% 
   ggplot(aes(x = continent, y = gdpPercap)) +
-  geom_boxplot() +
-  labs(
-    title = "GDP per Capita by Continent (1952)",
-    x = "Continent",
-    y = "GDP per Capita (USD)"
-  ) +
-  theme_minimal()
+  geom_boxplot() + 
+  scale_y_log10() +
+  labs(title = "GDP per Capita by Continent (1952)",
+       y = "GDP per capita (log scale)")
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q2-task-1.png)<!-- -->
@@ -217,69 +225,44 @@ Oceania and Europe have higher median GDP per capita compared to other
 continents. Africa has the lowest median GDP per capita. The spread of
 GDP per capita is widest in Asia, indicating significant economic
 diversity. Europe has a relatively narrow spread, suggesting more
-economic homogeneity. **Difficulties & Approaches**: Some countries have
+economic homogeneity. Difficulties & Approaches: Some countries have
 extremely high GDP per capita, which can skew the plot.
+
+Revised The log scale reveals more differences between continents.
+Africa’s GDP distribution becomes more visible (median about \$1,000)
+The extreme outlier (Kuwait) is even more apparent Europe’s
+interquartile range appears narrower on log scale
 
 ### **q3** You should have found *at least* three outliers in q2 (but possibly many more!). Identify those outliers (figure out which countries they are).
 
 ``` r
 ## TASK: Identify the outliers from q2
-gapminder_1952 <- gapminder %>% filter(year == year_min)
-
-# Calculate the IQR and upper whisker for each continent
-outliers_1952 <- gapminder_1952 %>%
-  group_by(continent) %>%
-  mutate(
-    Q1 = quantile(gdpPercap, 0.25),  # First quartile (25th percentile)
-    Q3 = quantile(gdpPercap, 0.75),  # Third quartile (75th percentile)
-    IQR = Q3 - Q1,                   # Interquartile range
-    Upper_Whisker = Q3 + 1.5 * IQR   # Upper whisker
-  ) %>%
-  filter(gdpPercap > Upper_Whisker)  # Filter for outliers
-
-# Display the outliers
-outliers_1952
+gapminder %>% 
+  filter(year == year_min) %>% 
+  filter(continent == "Americas" | continent == "Asia") %>% 
+  arrange(desc(gdpPercap))
 ```
 
-    ## # A tibble: 9 × 10
-    ## # Groups:   continent [4]
-    ##   country       continent  year lifeExp       pop gdpPercap    Q1    Q3   IQR
-    ##   <fct>         <fct>     <int>   <dbl>     <int>     <dbl> <dbl> <dbl> <dbl>
-    ## 1 Angola        Africa     1952    30.0   4232095     3521.  535. 1455.  920.
-    ## 2 Bahrain       Asia       1952    50.9    120447     9867.  750. 3035. 2286.
-    ## 3 Canada        Americas   1952    68.8  14785584    11367. 2428. 3940. 1512.
-    ## 4 Gabon         Africa     1952    37.0    420702     4293.  535. 1455.  920.
-    ## 5 Kuwait        Asia       1952    55.6    160000   108382.  750. 3035. 2286.
-    ## 6 South Africa  Africa     1952    45.0  14264935     4725.  535. 1455.  920.
-    ## 7 Switzerland   Europe     1952    69.6   4815000    14734. 3241. 7237. 3996.
-    ## 8 United States Americas   1952    68.4 157553000    13990. 2428. 3940. 1512.
-    ## 9 Venezuela     Americas   1952    55.1   5439568     7690. 2428. 3940. 1512.
-    ## # ℹ 1 more variable: Upper_Whisker <dbl>
-
-``` r
-# Create a boxplot with outliers highlighted
-gapminder_1952 %>%
-  ggplot(aes(x = continent, y = gdpPercap)) +
-  geom_boxplot() +
-  geom_point(
-    data = outliers_1952,  # Highlight outliers
-    aes(color = country),
-    size = 3
-  ) +
-  labs(
-    title = "GDP per Capita by Continent (1952) with Outliers Highlighted",
-    x = "Continent",
-    y = "GDP per Capita (USD)"
-  ) +
-  theme_minimal()
-```
-
-![](c04-gapminder-assignment_files/figure-gfm/q3-task-1.png)<!-- -->
+    ## # A tibble: 58 × 6
+    ##    country       continent  year lifeExp       pop gdpPercap
+    ##    <fct>         <fct>     <int>   <dbl>     <int>     <dbl>
+    ##  1 Kuwait        Asia       1952    55.6    160000   108382.
+    ##  2 United States Americas   1952    68.4 157553000    13990.
+    ##  3 Canada        Americas   1952    68.8  14785584    11367.
+    ##  4 Bahrain       Asia       1952    50.9    120447     9867.
+    ##  5 Venezuela     Americas   1952    55.1   5439568     7690.
+    ##  6 Saudi Arabia  Asia       1952    39.9   4005677     6460.
+    ##  7 Argentina     Americas   1952    62.5  17876956     5911.
+    ##  8 Uruguay       Americas   1952    66.1   2252965     5717.
+    ##  9 Cuba          Americas   1952    59.4   6007797     5587.
+    ## 10 Lebanon       Asia       1952    55.9   1439529     4835.
+    ## # ℹ 48 more rows
 
 **Observations**:
 
 - Identify the outlier countries from q2
-  - (Your response here)
+  - Kuwait (Asia extreme outlier), United States(Americas), and Canada
+    (Americas)
 
 *Hint*: For the next task, it’s helpful to know a ggplot trick we’ll
 learn in an upcoming exercise: You can use the `data` argument inside
@@ -309,38 +292,20 @@ gapminder %>%
 variables; think about using different aesthetics or facets.
 
 ``` r
-## TASK: Create a visual of gdpPercap vs continent\
-gapminder_years <- gapminder %>% filter(year %in% c(year_min, year_max))
-
-# Identify outliers from q3
-outliers_1952 <- gapminder %>%
-  filter(year == year_min) %>%
-  group_by(continent) %>%
-  mutate(
-    Q1 = quantile(gdpPercap, 0.25),  # First quartile (25th percentile)
-    Q3 = quantile(gdpPercap, 0.75),  # Third quartile (75th percentile)
-    IQR = Q3 - Q1,                   # Interquartile range
-    Upper_Whisker = Q3 + 1.5 * IQR   # Upper whisker
-  ) %>%
-  filter(gdpPercap > Upper_Whisker)  # Filter for outliers
-
-# plot comparing gdpPercap vs continent for both years
-gapminder_years %>%
+## TASK: Create a visual of gdpPercap vs continent
+gapminder %>% 
+  filter(year %in% c(year_min, year_max)) %>% 
   ggplot(aes(x = continent, y = gdpPercap)) +
   geom_boxplot() +
+  scale_y_log10() +
+  facet_grid(~year) +
   geom_point(
-    data = outliers_1952,  # Highlight outliers from 1952
-    aes(color = country),
-    size = 3
+    data = . %>% filter(country %in% c("Kuwait", "United States", "Canada")),
+    color = "red",
+    size = 2
   ) +
-  facet_wrap(~year, ncol = 1) +  
-  labs(
-    title = "GDP per Capita by Continent (1952 vs 2007)",
-    subtitle = "Outliers from 1952 highlighted",
-    x = "Continent",
-    y = "GDP per Capita (USD)"
-  ) +
-  theme_minimal()
+  labs(title = "GDP Comparison: 1952 vs 2007",
+       y = "GDP per capita (log scale)")
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q4-task-1.png)<!-- -->
@@ -352,6 +317,13 @@ The outliers in 1952 (Kuwait) highlight countries that were already
 economically advanced at the time.
 
 The rise of new outliers in 2007 reflects the new economic growth.
+
+Revised Observations - Using facet_grid provides better vertical space
+for comparison - All continents show upward shift in GDP distributions -
+Africa’s growth appears modest compared to others - Asia shows dramatic
+expansion in upper range - The Americas’ distribution became more
+compressed - Europe maintained relatively tight distribution - Outliers
+in 2007 are less extreme relative to peers
 
 # Your Own EDA
 
@@ -366,52 +338,37 @@ the relationship between variables, or something else entirely.
 
 ``` r
 ## TASK: Your first graph
-# Plot life expectancy over time by continent
 gapminder %>%
   ggplot(aes(x = year, y = lifeExp, color = continent)) +
-  geom_smooth(se = FALSE) +  # Add smoothed trend lines
-  labs(
-    title = "Life Expectancy Over Time by Continent",
-    x = "Year",
-    y = "Life Expectancy (years)",
-    color = "Continent"
-  ) +
-  theme_minimal()
+  geom_smooth(se = FALSE) +
+  labs(title = "Life Expectancy Trends by Continent")
 ```
 
     ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task1-1.png)<!-- -->
 
-- (Your notes and observations here)
-
-Life expectancy has increased across all continents from 1952 to 2007.
-
-Europe and Oceania have the highest life expectancy, while Africa has
-the lowest.
+- Observations
+- Life expectancy has increased across all continents from 1952 to
+  2007. 
+- Europe and Oceania have the highest life expectancy, while Africa has
+  the lowest.
 
 Questions:
 
-Why does Africa have a significantly lower life expectancy compared to
-other continents?
+How has the life expectancy gap between continents changed over time?
 
-What factors contributed to the rapid increase in life expectancy in
-Asia after the 1960s?
+Which continent showed the most consistent growth pattern?
 
 ``` r
 ## TASK: Your second graph
 # Plot GDP per capita vs life expectancy
 gapminder %>%
-  ggplot(aes(x = gdpPercap, y = lifeExp, color = continent)) +
-  geom_point(alpha = 0.6) +  # Add points with transparency
-  scale_x_log10() +  # Use log scale for GDP per capita
-  labs(
-    title = "GDP per Capita vs Life Expectancy",
-    x = "GDP per Capita (USD, log scale)",
-    y = "Life Expectancy (years)",
-    color = "Continent"
-  ) +
-  theme_minimal()
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.5) +
+  scale_x_log10() +
+  facet_wrap(~continent) +
+  labs(title = "GDP vs Life Expectancy by Continent")
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task2-1.png)<!-- -->
@@ -432,8 +389,8 @@ life expectancy.
 
 Questions:
 
-What explains the outliers with low GDP per capita but high life
-expectancy?
+Does the range in life expectancy in Asia have a correlation with having
+a large population?
 
 ``` r
 ## TASK: Your third graph
@@ -457,17 +414,12 @@ gapminder %>%
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task3-1.png)<!-- -->
 
-- (Your notes and observations here) A trend I see is that Asia has the
-  highest population and the fastest growth rate.
+- (Your notes and observations here)
+- A trend I see is that Asia has the highest population and the fastest
+  growth rate.
+- Africa shows rapid population growth starting in the 1980s.
+- Europe has relatively stable population growth.
 
-Africa shows rapid population growth starting in the 1980s.
+Questions: Which continents show accelerating vs decelerating growth?
 
-Europe has relatively stable population growth.
-
-Questions:
-
-Why does Africa show a sudden increase in population growth after the
-1980s?
-
-What factors contribute to the slower population growth in Europe
-compared to other continents?
+How does population growth rate correlate with economic indicators?
