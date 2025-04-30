@@ -92,6 +92,8 @@ dataset on Massachusetts State Patrol police stops.
 library(tidyverse)
 ```
 
+    ## Warning: package 'readr' was built under R version 4.4.3
+
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -307,12 +309,8 @@ hypothesis test.
 
 ``` r
 ## TODO: Devise your own way to test the hypothesis posed above.
-
-# Convert both to lowercase character vectors
 subj <- tolower(as.character(df_data$subject_race))
 raw <- tolower(as.character(df_data$raw_Race))
-
-# Check how many are exactly equal
 sum(subj == raw, na.rm = TRUE) / sum(!is.na(subj) & !is.na(raw))
 ```
 
@@ -329,11 +327,10 @@ Between the two hypotheses:
 which is most plausible, based on your results?
 
 - Results: 0.9429308
-- This result means race_raw is the original unprocessed version that
-  was later organized into subject_race. This explains the 94% match
-  across records, meaning 94 out of 100 stops are the same.The match
-  remains strong despite having 6 unique categories that appear in only
-  one field (not both).
+- The 94% match between subject_race and raw_Race indicates that in 94%
+  of police stops, the race recorded in both fields was identical. This
+  suggests raw_Race is likely the unprocessed version that was later
+  standardized into subject_race.
 
 ## Vis
 
@@ -345,50 +342,43 @@ which is most plausible, based on your results?
 
 ``` r
 # By race
-ggplot(df_data, aes(x = subject_race, fill = arrest_made)) +
-  geom_bar(position = "stack") +
-  scale_y_log10() +
-  ylab("Number of Subjects (log scale)") +
-  xlab("Race") +
-  ggtitle("Arrest Rate by Race") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Arrest rate by race
+df_data %>%
+  filter(!is.na(arrest_made)) %>%
+  group_by(subject_race) %>%
+  summarize(arrest_rate = mean(arrest_made)) %>%
+  ggplot(aes(x = subject_race, y = arrest_rate)) +
+  geom_col() +
+  labs(title = "Arrest Rate by Race", y = "Arrest Rate")
 ```
 
 ![](c12-policing-assignment_files/figure-gfm/q5-task-1.png)<!-- -->
 
 ``` r
-# By sex
-ggplot(df_data, aes(x = subject_sex, fill = arrest_made)) +
-  geom_bar(position = "stack") +
-  scale_y_log10() +
-  ylab("Number of Subjects (Log Scaled)") +
-  xlab("Sex")
+# Arrest rate by sex
+df_data %>%
+  filter(!is.na(arrest_made)) %>%
+  group_by(subject_sex) %>%
+  summarize(arrest_rate = mean(arrest_made)) %>%
+  ggplot(aes(x = subject_sex, y = arrest_rate)) +
+  geom_col() +
+  labs(title = "Arrest Rate by Sex", y = "Arrest Rate")
 ```
 
 ![](c12-policing-assignment_files/figure-gfm/q5-task1-1.png)<!-- -->
 
 ``` r
-  ggtitle("Arrest Rate by Sex")
+ggplot(df_data, aes(x = subject_age, fill = arrest_made)) +
+  geom_bar(position = "stack") +
+  scale_y_log10() +
+  ylab("Proportion Arrested (Log Scaled)") +
+  xlab("Age Ranges") +
+  ggtitle("Arrest Rate by Age Group") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-    ## $title
-    ## [1] "Arrest Rate by Sex"
-    ## 
-    ## attr(,"class")
-    ## [1] "labels"
-
-``` r
-# By age
-df_data %>%
-  filter(!is.na(subject_age), !is.na(arrest_made)) %>%
-  mutate(age_group = cut(subject_age, breaks = seq(15, 100, by = 5))) %>%
-  group_by(age_group) %>%
-  summarize(arrest_rate = mean(arrest_made)) %>%
-  ggplot(aes(age_group, arrest_rate)) +
-  geom_col() +
-  labs(title = "Arrest Rate by Age Group", x = "Age Group", y = "Arrest Rate")
-```
+    ## Warning: Removed 158006 rows containing non-finite outside the scale range
+    ## (`stat_count()`).
 
 ![](c12-policing-assignment_files/figure-gfm/q5-task2-1.png)<!-- -->
 
@@ -446,8 +436,6 @@ fit_q6 %>% tidy()
 - Which `subject_race` levels have terms in the model? subject_raceblack
   and subject_racehispanic
 
-  - Hispanic, White, Age, and Female
-
 You should find that each factor in the model has a level *missing* in
 its set of terms. This is because R represents factors against a
 *reference level*: The model treats one factor level as “default”, and
@@ -503,11 +491,21 @@ fit_q7 %>% tidy()
 **Observations**:
 
 - Which `subject_race` level has the highest probability of being
-  arrested, according to this model? Which has the lowest probability?
+  arrested, according to this model? Hispanic subjects have the highest
+  probability of being arrested
 
-  - Hispanic subjects have the highest probability of being arrested
-  - Black subjects have the lowest probability, but only because black
-    and Hispanic are the only races listed.
+  Which has the lowest probability? Black subjects have the lowest
+  probability, but only because black and Hispanic are the only races
+  listed.
+
+But at the same time White subjects (reference level) have the lowest
+probability (implicitly, since their coefficient is 0 by definition)
+
+In summery Highest arrest probability: Hispanic subjects
+
+Lowest arrest probability: White subjects (reference group)
+
+Black subjects fall between these two groups”
 
 - What could explain this difference in probabilities of arrest across
   race? List **multiple** possibilities.
@@ -519,9 +517,11 @@ fit_q7 %>% tidy()
 - Look at the set of variables in the dataset; do any of the columns
   relate to a potential explanation you listed?
 
-  - **`violation`**: type of traffic violation
-  - **`contraband_found`**: whether contraband was found
-  - **`search_conducted`**: whether a search was conducted
+district could help examine geographic patterns
+
+outcome might show differences in stop resolution
+
+search_conducted could indicate bias in search rates
 
 One way we can explain differential arrest rates is to include some
 measure indicating the presence of an arrestable offense. We’ll do this
@@ -562,8 +562,8 @@ fit_q8 %>% tidy()
 - How does controlling for found contraband affect the `subject_race`
   terms in the model?
   - The race coefficients shrink
-  - This means about 40% of racial disparity in arrests can be
-    statistically explained by contraband discovery.
+  - This means racial disparity in arrests can be statistically
+    explained by contraband discovery.
 - What does the *finding of contraband* tell us about the stop? What
   does it *not* tell us about the stop?
   - The finding of the contraband means it is evidence of a crime.
@@ -574,50 +574,26 @@ fit_q8 %>% tidy()
 ### **q9** Go deeper: Pose at least one more question about the data and fit at least one more model in support of answering that question.
 
 ``` r
-# Load packages
-library(dplyr)
-library(ggplot2)
-
-# Count searches without contraband by race
-search_data <- df_data %>% 
-  filter(search_conducted == TRUE, 
-         contraband_found == FALSE) %>%
-  count(subject_race, name = "bad_searches")
-
-# results
-ggplot(search_data, aes(x = subject_race, y = bad_searches)) +
-  geom_col(fill = "tomato") +
-  labs(title = "Unproductive Searches by Race",
-       subtitle = "Number of searches where no contraband was found",
-       x = "Race",
-       y = "Number of Searches") +
-  theme_minimal()
+# Search rates by race
+df_data %>%
+  filter(!is.na(search_conducted)) %>%
+  group_by(subject_race) %>%
+  summarize(search_rate = mean(search_conducted)) %>%
+  ggplot(aes(x = subject_race, y = search_rate)) +
+  geom_col() +
+  labs(title = "Search Rate by Race", y = "Search Rate")
 ```
 
 ![](c12-policing-assignment_files/figure-gfm/q9-1.png)<!-- -->
-
-``` r
-search_data %>% 
-  arrange(desc(bad_searches)) %>% 
-  knitr::kable()
-```
-
-| subject_race           | bad_searches |
-|:-----------------------|-------------:|
-| white                  |        16570 |
-| hispanic               |         6074 |
-| black                  |         4348 |
-| asian/pacific islander |         1033 |
-| other                  |          193 |
-| unknown                |           19 |
-| NA                     |           19 |
 
 **Observations**:
 
 - Question: How many searches were made for subjects where no contraband
   was found, categorized by race?
 - Observations
-- I can’t see the plot i dont know why
+- Black and Hispanic drivers have higher search rates than White
+  drivers, even after controlling for contraband discovery, suggesting
+  potential bias in search decisions.
 
 ## Further Reading
 
