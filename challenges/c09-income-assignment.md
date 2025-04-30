@@ -88,6 +88,8 @@ all files uploaded to GitHub.**
 library(tidyverse)
 ```
 
+    ## Warning: package 'readr' was built under R version 4.4.3
+
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -421,9 +423,29 @@ compare population with income.
 
 ``` r
 ## TODO: Join df_q4 and df_pop by the appropriate column
+df_data <- df_q4 %>%
+  left_join(df_pop, by = "Geography")
 
-df_data <- merge(df_q4, df_pop, by = "Geography", all = FALSE)
+df_data
 ```
+
+    ## # A tibble: 19,320 × 13
+    ##    Geography  geographic_area_name category income_estimate income_moe income_SE
+    ##    <chr>      <chr>                <chr>              <dbl>      <dbl>     <dbl>
+    ##  1 0500000US… Autauga County, Ala… 2-perso…           64947       6663     4050.
+    ##  2 0500000US… Autauga County, Ala… 3-perso…           80172      14181     8621.
+    ##  3 0500000US… Autauga County, Ala… 4-perso…           85455      10692     6500.
+    ##  4 0500000US… Autauga County, Ala… 5-perso…           88601      20739    12607.
+    ##  5 0500000US… Autauga County, Ala… 6-perso…          103787      12387     7530.
+    ##  6 0500000US… Autauga County, Ala… 7-or-mo…          135083      73304    44562.
+    ##  7 0500000US… Baldwin County, Ala… 2-perso…           63975       2297     1396.
+    ##  8 0500000US… Baldwin County, Ala… 3-perso…           79390       8851     5381.
+    ##  9 0500000US… Baldwin County, Ala… 4-perso…           88458       5199     3160.
+    ## 10 0500000US… Baldwin County, Ala… 5-perso…           91259       7011     4262.
+    ## # ℹ 19,310 more rows
+    ## # ℹ 7 more variables: income_lo <dbl>, income_hi <dbl>, income_CV <dbl>,
+    ## #   `Geographic Area Name` <chr>, population_estimate <dbl>,
+    ## #   `Margin of Error!!Total` <chr>, ...5 <lgl>
 
 # Analysis
 
@@ -475,21 +497,28 @@ df_data %>%
 **Observations**:
 
 - Document your observations here.
-  - 2 person families seem to be the ones with the least range and have
-    the lowest median household income.
-  - 7 person family have the widest range
-  - What standed out to me is that a 4 person families in Nantucket have
-    the widest range out of all the counties displayed.
+  - The median incomes for different family sizes generally follow
+    similar patterns across counties, with larger families having higher
+    incomes
+
+There is significant overlap in confidence intervals between family
+sizes within counties, making it difficult to clearly distinguish
+between them
+
+Suffolk county (which contains Boston) shows particularly wide
+confidence intervals for all family sizes
+
+Nantucket county has the widest confidence intervals relative to its
+income estimates
+
 - Can you confidently distinguish between household incomes in Suffolk
   county? Why or why not?
-  - (Your response here) The majority the households in Suffolk are very
-    overlapped with eachother, especially the 4, 5, and 6 person
-    households. They all have almost the same range of median income.
-    The 7 person households are very easily distinguished from the rest
-    of the households in Suffolk, but it is hard to tell the incomes for
-    all the other catagories.
+  - We cannot confidently distinguish between household incomes for
+    different family sizes in Suffolk county because the confidence
+    intervals overlap substantially.
 - Which counties have the widest confidence intervals?
-  - (Your response here)
+  - Nantucket and Dukes counties (Martha’s Vineyard) have the widest
+    confidence intervals, likely due to smaller populations.
 
 In the next task you’ll investigate the relationship between population
 and uncertainty.
@@ -501,17 +530,16 @@ and uncertainty.
 
 ``` r
 df_data %>%
-  ggplot(aes(x = population_estimate, y = income_SE, color = category)) +
-  geom_point(alpha = 0.7, size = 3) +
-  geom_smooth(method = "loess", se = FALSE, color = "black", linetype = "dashed") +
-  scale_x_continuous(labels = scales::comma) +
+  ggplot(aes(population_estimate, income_SE)) +
+  geom_point(alpha = 0.3) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_smooth(method = "lm") +
   labs(
-    title = "Standard Error of Median Income vs. Population",
-    x = "Population",
-    y = "Standard Error of Median Household Income",
-    color = "Category"
-  ) +
-  theme_minimal()
+    x = "Population (log scale)",
+    y = "Standard Error of Income Estimate (log scale)",
+    title = "Standard Error vs Population Size"
+  )
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
@@ -528,10 +556,19 @@ df_data %>%
 
 - What *overall* trend do you see between `SE` and population? Why might
   this trend exist?
-  - (Your response here)
+  - as county population goes up, the standard error (uncertainty) in
+    income estimates goes down.
+
+Smaller counties = fewer people surveyed = less precise estimates Bigger
+counties = more people surveyed = more precise estimates Income data is
+more reliable for larger counties
+
 - What does this *overall* trend tell you about the relative ease of
-  studying small vs large counties?
-  - (Your response here)
+  studying small vs large counties? The more people in a county, the
+  more confident we can be about its income numbers. Small counties’
+  income data comes with bigger “error bars.” The trend suggests it’s
+  easier (more precise) to study income patterns in larger counties than
+  smaller ones
 
 # Going Further
 
@@ -544,49 +581,58 @@ States: Pose your own question and try to answer it with the data.
 
 ``` r
 ## TODO: Pose and answer your own question about the data
-colnames(df_data)
-```
-
-    ##  [1] "Geography"              "geographic_area_name"   "category"              
-    ##  [4] "income_estimate"        "income_moe"             "income_SE"             
-    ##  [7] "income_lo"              "income_hi"              "income_CV"             
-    ## [10] "Geographic Area Name"   "population_estimate"    "Margin of Error!!Total"
-    ## [13] "...5"
-
-``` r
-# Calculate variation in median income across household sizes for each county
-library(tidyverse)
-library(forcats)
-
-#income range across household sizes per county
-income_variation <- df_data %>%
-  filter(str_detect(geographic_area_name, "Massachusetts")) %>%
-  group_by(geographic_area_name) %>%
-  summarise(
-    income_range = max(income_estimate, na.rm = TRUE) - min(income_estimate, na.rm = TRUE),
-    .groups = 'drop'
-  ) %>%
+# Compare income estimates between Northeast and South regions
+df_data %>%
   mutate(
-    county = str_remove(geographic_area_name, " County,.*$"),
-    county = fct_reorder(county, income_range)
-  )
-
-# Plot income range for each county (variation across household sizes)
-ggplot(income_variation, aes(x = county, y = income_range)) +
-  geom_col(fill = "darkorchid") +
-  coord_flip() +
+    region = case_when(
+      str_detect(geographic_area_name, "Massachusetts|Connecticut|New York|New Jersey") ~ "Northeast",
+      str_detect(geographic_area_name, "Alabama|Mississippi|Georgia|South Carolina") ~ "South",
+      TRUE ~ "Other"
+    )
+  ) %>%
+  filter(region %in% c("Northeast", "South")) %>%
+  ggplot(aes(population_estimate, income_estimate, color = region)) +
+  geom_point(alpha = 0.3) +
+  scale_x_log10() +
+  facet_wrap(~category) +
+  geom_smooth(method = "lm") +
   labs(
-    title = "Variation in Median Income Across Household Sizes by County (MA)",
-    x = "County",
-    y = "Income Range ($)",
-    caption = "Based on ACS median household income estimates"
-  ) +
-  theme_minimal()
+    x = "Population (log scale)",
+    y = "Median Income Estimate",
+    title = "Income vs Population by Region and Family Size",
+    subtitle = "Comparing Northeast and South regions"
+  )
 ```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+    ## Warning: Removed 256 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 256 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
 
 ![](c09-income-assignment_files/figure-gfm/q8-task-1.png)<!-- -->
 
-**Observations**: My question is - Document your observations here
+**Observations**:
+
+Income vs Population by Region
+
+Northeast counties consistently show higher median incomes than Southern
+counties across all family sizes
+
+The income advantage of the Northeast appears largest for larger
+families (4+ person families)
+
+The relationship between population and income is slightly positive in
+both regions, meaning counties with higher populations tend to have
+higher incomes
+
+The variation in incomes is greater among smaller counties in both
+regions
+
+The patterns hold across all family sizes, though the absolute income
+differences increase with family size
 
 Ideas:
 
