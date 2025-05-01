@@ -57,6 +57,8 @@ all files uploaded to GitHub.**
 library(tidyverse)
 ```
 
+    ## Warning: package 'readr' was built under R version 4.4.3
+
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -159,20 +161,24 @@ is Gram positive or negative.
 
 ``` r
 # WRITE YOUR CODE HERE
-# Pivot the data to long format for easier plotting
+# Revised Visual 1: Ordered bar plot with log scale and reference line
 df_long <- df_antibiotics %>%
   pivot_longer(cols = c(penicillin, streptomycin, neomycin), 
                names_to = "antibiotic", 
-               values_to = "MIC")
+               values_to = "MIC") %>%
+  # Order bacteria by average MIC
+  mutate(bacteria = fct_reorder(bacteria, MIC, .fun = mean))
 
-# Visual 1: Bar plot showing MIC values for each antibiotic by bacteria
 ggplot(df_long, aes(x = bacteria, y = MIC, fill = antibiotic)) +
   geom_bar(stat = "identity", position = "dodge") +
+  geom_hline(yintercept = 0.1, linetype = "dashed", color = "red") +
+  scale_y_log10() +
   facet_wrap(~gram, scales = "free_x") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(title = "MIC Values for Antibiotics by Bacteria and Gram Stain",
+       subtitle = "Dashed line shows MIC = 0.1 threshold for human treatment",
        x = "Bacteria",
-       y = "Minimum Inhibitory Concentration (MIC)",
+       y = "Minimum Inhibitory Concentration (MIC, log10 scale)",
        fill = "Antibiotic")
 ```
 
@@ -190,15 +196,17 @@ your other visuals.
 
 ``` r
 # WRITE YOUR CODE HERE
-# Visual 2: Scatter plot showing MIC values for each antibiotic by bacteria
-ggplot(df_long, aes(x = antibiotic, y = MIC, color = bacteria, shape = gram)) +
+# Revised Visual 2: Point plot with text labels
+ggplot(df_long, aes(x = antibiotic, y = MIC, color = gram)) +
   geom_point(size = 3) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  geom_text_repel(aes(label = bacteria), size = 3) +
+  geom_hline(yintercept = 0.1, linetype = "dashed", color = "red") +
+  scale_y_log10() +
   labs(title = "MIC Values for Antibiotics by Bacteria and Gram Stain",
+       subtitle = "Dashed line shows MIC = 0.1 threshold for human treatment",
        x = "Antibiotic",
-       y = "Minimum Inhibitory Concentration (MIC)",
-       color = "Bacteria",
-       shape = "Gram Stain")
+       y = "Minimum Inhibitory Concentration (MIC, log10 scale)",
+       color = "Gram Stain")
 ```
 
 ![](c05-antibiotics-assignment_files/figure-gfm/q1.2-1.png)<!-- -->
@@ -214,12 +222,15 @@ your other visuals.
 
 ``` r
 # WRITE YOUR CODE HERE
-# Visual 3: Box plot showing MIC values for each antibiotic by Gram stain
+# Revised Visual 3: Box plot with log scale
 ggplot(df_long, aes(x = antibiotic, y = MIC, fill = gram)) +
   geom_boxplot() +
+  geom_hline(yintercept = 0.1, linetype = "dashed", color = "red") +
+  scale_y_log10() +
   labs(title = "Distribution of MIC Values by Antibiotic and Gram Stain",
+       subtitle = "Dashed line shows MIC = 0.1 threshold for human treatment",
        x = "Antibiotic",
-       y = "Minimum Inhibitory Concentration (MIC)",
+       y = "Minimum Inhibitory Concentration (MIC, log10 scale)",
        fill = "Gram Stain")
 ```
 
@@ -236,7 +247,22 @@ your other visuals.
 
 ``` r
 # WRITE YOUR CODE HERE
+# Visual 4: Heatmap with log scale
+ggplot(df_long, aes(x = antibiotic, y = fct_reorder(bacteria, MIC), fill = MIC)) +
+  geom_tile() +
+  geom_text(aes(label = round(MIC, 2)), size = 3) +
+  scale_fill_gradient(low = "green", high = "red", trans = "log10") +
+  facet_wrap(~gram, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.text.y = element_text(size = 8)) +
+  labs(title = "Heatmap of Antibiotic Effectiveness",
+       subtitle = "Color intensity shows MIC value (log10 scale)",
+       x = "Antibiotic",
+       y = "Bacteria",
+       fill = "MIC (log10)")
 ```
+
+![](c05-antibiotics-assignment_files/figure-gfm/q1.4-1.png)<!-- -->
 
 #### Visual 5 (Some variables)
 
@@ -249,7 +275,21 @@ your other visuals.
 
 ``` r
 # WRITE YOUR CODE HERE
+# Visual 5: Parallel coordinates with log scale
+ggplot(df_long, aes(x = antibiotic, y = MIC, group = bacteria, color = gram)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0.1, linetype = "dashed", color = "red") +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Parallel Coordinates Plot of Antibiotic Effectiveness",
+       subtitle = "Dashed line shows MIC = 0.1 threshold for human treatment",
+       x = "Antibiotic",
+       y = "MIC (log10 scale)",
+       color = "Gram Stain")
 ```
+
+![](c05-antibiotics-assignment_files/figure-gfm/q1.5-1.png)<!-- -->
 
 ### **q2** Assess your visuals
 
@@ -270,10 +310,29 @@ opportunity to think about why this is.**
 > How do the three antibiotics vary in their effectiveness against
 > bacteria of different genera and Gram stain?
 
-*Observations* - What is your response to the question above? - (Write
-your response here) - Which of your visuals above (1 through 5) is
-**most effective** at helping to answer this question? - (Write your
-response here) - Why? - (Write your response here)
+*Observations* - What is your response to the question above?
+
+Penicillin shows clear Gram-positive preference (lower MIC values)
+
+Neomycin is most consistently effective across Gram types
+
+Streptomycin shows wide variability, with some Gram-negatives being
+susceptible
+
+The clinical threshold (MIC ≤ 0.1) is most consistently achieved by
+neomycin
+
+- Which of your visuals above (1 through 5) is **most effective** at
+  helping to answer this question?
+- Why?
+
+Visual 3 (Box plot) is most effective because:
+
+Clearly shows distribution differences between Gram types
+
+Highlights the clinical threshold with reference line
+
+Allows easy comparison across all three antibiotics
 
 #### Guiding Question 2
 
@@ -284,10 +343,25 @@ and in 1984 *Streptococcus fecalis* was renamed *Enterococcus fecalis*
 > Why was *Diplococcus pneumoniae* was renamed *Streptococcus
 > pneumoniae*?
 
-*Observations* - What is your response to the question above? - (Write
-your response here) - Which of your visuals above (1 through 5) is
-**most effective** at helping to answer this question? - (Write your
-response here) - Why? - (Write your response here)
+*Observations* - What is your response to the question above? The
+resistance profile (high penicillin MIC, low neomycin MIC) matches other
+Streptococcus species
+
+Both are Gram-positive
+
+Similar antibiotic susceptibility patterns suggest shared biological
+characteristics
+
+Renaming likely reflected improved understanding of genetic
+relationships
+
+- Which of your visuals above (1 through 5) is **most effective** at
+  helping to answer this question?
+- Why? Visual 5 (Parallel coordinates) is most effective because, it
+  shows complete resistance profiles for each bacterium. Clearly
+  demonstrates similar patterns between Diplococcus and Streptococcus
+  and maintains individual bacterium identity while showing all three
+  antibiotics
 
 # References
 
