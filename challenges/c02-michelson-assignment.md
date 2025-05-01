@@ -150,29 +150,29 @@ df_q1 <- df_michelson %>%
   arrange(desc(Distinctness))
 
 df_q1 %>%
-  knitr::kable()
+  knitr::kable(digits = 0)
 ```
 
 | Distinctness |   n | MeanVelocity |
 |:-------------|----:|-------------:|
-| 3            |  46 |     299861.7 |
-| 2            |  39 |     299858.5 |
-| 1            |  15 |     299808.0 |
+| 3            |  46 |       299862 |
+| 2            |  39 |       299858 |
+| 1            |  15 |       299808 |
 
-**Observations**: - Write your observations here! The mean velocity are
-the same for distinctness levels 3 and 2 but lower for distinctness
-level 1. The number of measurements (n) decreases as the distinctness
-quality decreases - Why might your table differ from Michelson’s?
-Michelson may have used a different method to calculate the mean
-velocity, which then gave him differnet results
+**Observations**: - Write your observations here! The mean velocities
+are nearly identical for distinctness levels 3 (good) and 2 (fair), but
+slightly lower for level 1 (poor)
 
-The `Velocity` values in the dataset are the speed of light *in air*;
-Michelson introduced a couple of adjustments to estimate the speed of
-light in a vacuum. In total, he added $+92$ km/s to his mean estimate
-for `VelocityVacuum` (from Michelson (1880), pg. 141). While the
-following isn’t fully rigorous ($+92$ km/s is based on the mean
-temperature), we’ll simply apply this correction to all the observations
-in the dataset.
+The number of measurements decreases with quality (46 → 39 → 15)
+
+The small discrepancies (e.g., 299860 vs Michelson’s 299861) are likely
+due to: Rounding differences (Michelson may have rounded intermediate
+calculations differently)
+
+Possible transcription differences in the historical record
+
+The exact dataset Michelson used for this table may have been slightly
+different
 
 ### **q2** Create a new variable `VelocityVacuum` with the $+92$ km/s adjustment to `Velocity`. Assign this new dataframe to `df_q2`.
 
@@ -252,9 +252,21 @@ print(paste("Is True Value Within Uncertainty Range?:", is_within_range))
     ## [1] "Is True Value Within Uncertainty Range?: FALSE"
 
 **Observations**: - Is Michelson’s estimate of the error (his
-uncertainty) greater or less than the true error? - (Your response
-here) - Make a quantitative comparison between Michelson’s uncertainty
-and his error. - (Your response here)
+uncertainty) greater or less than the true error? - Michelson’s
+estimate: 299,944.00 ± 51 km/s - True value: 299,792.458 km/s
+
+- Make a quantitative comparison between Michelson’s uncertainty and his
+  error.
+  - True error: 299,944.00 - 299,792.458 = 151.542 km/s
+  - Michelson’s uncertainty range: 299,893 to 299,995 km/s Michelson’s
+    uncertainty (±51 km/s) was smaller than the true error (151.542
+    km/s)
+
+The true value (299,792.458 km/s) falls outside Michelson’s uncertainty
+range
+
+Michelson underestimated his measurement error by about 3× (151.542/51 ≈
+3)
 
 The following plot shows all of Michelson’s data as a [control
 chart](https://en.wikipedia.org/wiki/Control_chart); this sort of plot
@@ -331,14 +343,116 @@ df_q2 %>%
 
 ![](c02-michelson-assignment_files/figure-gfm/q4-cf-real-simulated-1.png)<!-- -->
 
-**Observations**: Similarities - (your responses here) Differences -
-(your responses here)
+**Observations**: Similarities: Both datasets show variation around
+Michelson’s mean estimate (dotted line)
+
+Most points in both datasets fall within Michelson’s uncertainty bounds
+(dashed lines)
+
+The general shape of fluctuations is similar between real and simulated
+data
+
+Differences: Real data has more extreme values (point near 300,100 km/s
+in June)
+
+Simulated data shows tighter clustering around the mean
+
+Real data shows clear time-based patterns
+
+Real data shows quality changes over time
+
+Real data shows consistent overestimation relative to true value
+
+Simulated data centers on Michelson’s (incorrect) mean
 
 ### **q5** You have access to a few other variables. Construct a **at least three** visualizations of `VelocityVacuum` against these other factors. Are there other patterns in the data that might help explain the difference between Michelson’s estimate and `LIGHTSPEED_VACUUM`?
 
+``` r
+glimpse(df_q2)
+```
+
+    ## Rows: 100
+    ## Columns: 5
+    ## $ Date           <dttm> 1879-06-05, 1879-06-07, 1879-06-07, 1879-06-07, 1879-0…
+    ## $ Distinctness   <fct> 3, 2, 2, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 3, 3, 2…
+    ## $ Temp           <dbl> 76, 72, 72, 72, 72, 72, 83, 83, 83, 83, 83, 90, 90, 71,…
+    ## $ Velocity       <dbl> 299850, 299740, 299900, 300070, 299930, 299850, 299950,…
+    ## $ VelocityVacuum <dbl> 299942, 299832, 299992, 300162, 300022, 299942, 300042,…
+
+``` r
+#Graph 1
+ggplot(df_q2, aes(x = Temp, y = VelocityVacuum)) +
+  geom_point(color = "steelblue", alpha = 0.7) +
+  geom_hline(yintercept = LIGHTSPEED_VACUUM, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(title = "Speed vs. Temperature",
+       x = "Temperature (°F)",
+       y = "Measured Speed (km/s)") +
+  theme_minimal()
+```
+
+![](c02-michelson-assignment_files/figure-gfm/q5-1.png)<!-- -->
+
+``` r
+#Graph 2
+ggplot(df_q2, aes(x = Distinctness, y = VelocityVacuum)) +
+  geom_boxplot(fill = "lightblue") +
+  geom_hline(yintercept = LIGHTSPEED_VACUUM, 
+             color = "red", 
+             linetype = "dashed") +
+  labs(title = "Measurement Quality Comparison",
+       x = "Distinctness (3=Best)",
+       y = "Measured Speed (km/s)") +
+  theme_minimal()
+```
+
+![](c02-michelson-assignment_files/figure-gfm/q5-2.png)<!-- -->
+
+``` r
+#Graph 3
+df_q2 %>% 
+  group_by(Temp) %>% 
+  ggplot() + 
+  aes(Temp, VelocityVacuum) +
+  geom_point() +
+  ggtitle("Velocity in a Vacuum vs. Temperature")
+```
+
+![](c02-michelson-assignment_files/figure-gfm/q5-3.png)<!-- -->
+
+``` r
+#Graph 4
+df_q2 %>% 
+  ggplot(aes(x = VelocityVacuum, color = Distinctness)) +
+  geom_bar() +
+  ggtitle("Velocity in a Vacuum Count/Distinctness")
+```
+
+![](c02-michelson-assignment_files/figure-gfm/q5-4.png)<!-- -->
+
 **Observations**:
 
-- Make sure to record observations on your graphs!
+- Make sure to record observations on your graphs! For Graph 1 Speed
+  vs. Temperature
+- Points show a slight downward trend as temperature increases
+- All measurements are above the true speed of light (red line)
+- No extreme outliers in the temperature range
+
+For Graph 2 Measurement Quality Comparison
+
+- All quality groups show similar median values
+- True speed (red line) falls below all measurements
+
+For Graph 3 Velocity in a Vacuum vs. Temperature.
+
+- The peak velocity measurement occurs in the middle of the temperature
+  values - However, the lowest velocity measurement occurs at the lower
+  end of the temperature range
+
+For Graph 4 Velocity in a Vacuum Count/Distinctness - Higher velocity
+measurements tend to be 2 and 3 level distinctness. - 1 is the least
+common distinctness value
 
 ## Bibliography
 
