@@ -24,7 +24,7 @@ Unlike exercises, **challenges will be graded**. The following rubrics define ho
 <!-- ------------------------- -->
 
 | Category | Needs Improvement | Satisfactory |
-|------------------|-----------------------------|-------------------------|
+|------------------------|------------------------|------------------------|
 | Effort | Some task **q**'s left unattempted | All task **q**'s attempted |
 | Observed | Did not document observations, or observations incorrect | Documented correct observations based on analysis |
 | Supported | Some observations not clearly supported by analysis | All observations clearly supported by analysis (table, graph, etc.) |
@@ -214,10 +214,8 @@ Using your data in `df_q1`, estimate $\pi$.
 ## TASK: Estimate pi using your data from q1
 df_q3 <- 
   df_q1 %>% 
-  mutate(in_circle = (x^2 + y^2 <= 1)) %>%  # Check if point is in unit circle
-  summarize(pi_est = 4 * mean(in_circle))   # Calculate π estimate
-
-df_q3
+  mutate(stat_val = stat(x, y)) %>%  # Use stat() function
+  summarize(pi_est = mean(stat_val)) # Direct mean of stat() output
 ```
 
 Use the following to check that you've used the correct variable names. (NB. This does not check correctness.)
@@ -309,16 +307,13 @@ Compute a CLT-based confidence interval for $\pi$ at the 95% confidence level (`
 
 ```{r q6-task}
 df_q6 <- df_q1 %>%
+  mutate(stat_val = stat(x, y)) %>%  # Use stat() output
   summarize(
-    p_hat = mean(x^2 + y^2 <= 1),  # Proportion in circle
-    pi_hat = 4 * p_hat,            # Point estimate of π
-    se = 4 * sqrt(p_hat * (1 - p_hat) / nrow(df_q1)),  # Standard error
-    pi_lo = pi_hat - qnorm(0.975) * se,  # Lower bound
-    pi_up = pi_hat + qnorm(0.975) * se   # Upper bound
-  ) %>%
-  select(pi_lo, pi_up)
-
-df_q6
+    pi_hat = mean(stat_val),        # Mean of stat() = π estimate
+    se = sd(stat_val) / sqrt(n()),  # SE = sd(stat) / sqrt(n)
+    pi_lo = pi_hat - qnorm(0.975) * se,
+    pi_up = pi_hat + qnorm(0.975) * se
+  )
 ```
 
 **Observations**:

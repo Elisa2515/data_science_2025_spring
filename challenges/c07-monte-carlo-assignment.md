@@ -63,6 +63,8 @@ all files uploaded to GitHub.**
 library(tidyverse)
 ```
 
+    ## Warning: package 'readr' was built under R version 4.4.3
+
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
@@ -330,14 +332,9 @@ Using your data in `df_q1`, estimate $\pi$.
 ## TASK: Estimate pi using your data from q1
 df_q3 <- 
   df_q1 %>% 
-  mutate(in_circle = (x^2 + y^2 <= 1)) %>%  # Check if point is in unit circle
-  summarize(pi_est = 4 * mean(in_circle))   # Calculate π estimate
-
-df_q3
+  mutate(stat_val = stat(x, y)) %>%  # Use stat() function
+  summarize(pi_est = mean(stat_val)) # Direct mean of stat() output
 ```
-
-    ##   pi_est
-    ## 1  3.112
 
 Use the following to check that you’ve used the correct variable names.
 (NB. This does not check correctness.)
@@ -447,7 +444,7 @@ df_q5
     ## # A tibble: 1 × 2
     ##   pi_lo pi_up
     ##   <dbl> <dbl>
-    ## 1  3.01  3.21
+    ## 1  2.98  3.20
 
 ### **q6** CLT confidence interval
 
@@ -464,20 +461,14 @@ done something *wrong* in one of the tasks….
 
 ``` r
 df_q6 <- df_q1 %>%
+  mutate(stat_val = stat(x, y)) %>%  # Use stat() output
   summarize(
-    p_hat = mean(x^2 + y^2 <= 1),  # Proportion in circle
-    pi_hat = 4 * p_hat,            # Point estimate of π
-    se = 4 * sqrt(p_hat * (1 - p_hat) / nrow(df_q1)),  # Standard error
-    pi_lo = pi_hat - qnorm(0.975) * se,  # Lower bound
-    pi_up = pi_hat + qnorm(0.975) * se   # Upper bound
-  ) %>%
-  select(pi_lo, pi_up)
-
-df_q6
+    pi_hat = mean(stat_val),        # Mean of stat() = π estimate
+    se = sd(stat_val) / sqrt(n()),  # SE = sd(stat) / sqrt(n)
+    pi_lo = pi_hat - qnorm(0.975) * se,
+    pi_up = pi_hat + qnorm(0.975) * se
+  )
 ```
-
-    ##      pi_lo    pi_up
-    ## 1 3.008967 3.215033
 
 **Observations**:
 
